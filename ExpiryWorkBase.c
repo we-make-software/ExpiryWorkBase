@@ -29,7 +29,6 @@ static void ProcessExpiryWorkBaseToDo(struct work_struct*work){
     mutex_unlock(&expiry_work_base->Mutex);
     StopRaceConditionExpiryWorkBase(expiry_work_base);
 }
-
 void LockExpiryWorkBase(struct ExpiryWorkBase*expiry_work_base);
 void LockExpiryWorkBase(struct ExpiryWorkBase*expiry_work_base){
     if(!expiry_work_base)return;
@@ -84,10 +83,29 @@ void CancelExpiryWorkBase(struct ExpiryWorkBase*expiry_work_base){
     StopRaceConditionExpiryWorkBase(expiry_work_base);
 }
 EXPORT_SYMBOL(CancelExpiryWorkBase);
-struct ExpiryWorkBaseTest {
-    bool Invalid;
-    struct ExpiryWorkBase*Previous;
-    u8 Used[(2*sizeof(void*))+sizeof(struct mutex)+sizeof(struct delayed_work)];
+struct BackgroundExpiryWorkBase{
+    struct work_struct work;
+    struct ExpiryWorkBase*expiry_work_base;
 };
+static void BackgroundProcessExpiryWorkBase(struct work_struct*work);
+static void BackgroundProcessExpiryWorkBase(struct work_struct*work){
+    struct BackgroundExpiryWorkBase*background_expiry_work_base=container_of(work,struct BackgroundExpiryWorkBase,work);
+    if(!background_expiry_work_base)return;
+    ResetExpiryWorkBase(background_expiry_work_base->expiry_work_base);
+    kfree(background_expiry_work_base);
+}
+void BackgroundResetExpiryWorkBase(struct ExpiryWorkBase*expiry_work_base);
+void BackgroundResetExpiryWorkBase(struct ExpiryWorkBase*expiry_work_base){
+    struct BackgroundExpiryWorkBase*background_expiry_work_base=kmalloc(sizeof(struct BackgroundExpiryWorkBase),GFP_KERNEL);
+    if(!background_expiry_work_base){
+        ResetExpiryWorkBase(expiry_work_base);
+        return;
+    }
+    background_expiry_work_base->expiry_work_base=expiry_work_base;
+    INIT_WORK(&background_expiry_work_base->work,BackgroundProcessExpiryWorkBase);
+    queue_work(system_wq,&background_expiry_work_base->work);
+} 
+EXPORT_SYMBOL(BackgroundResetExpiryWorkBase);  
+
 
 Setup("Expiry Work Base",{},{})
