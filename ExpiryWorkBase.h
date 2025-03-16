@@ -11,4 +11,5 @@ extern void CancelExpiryWorkBase(struct ExpiryWorkBase*expiry_work_base);
 extern bool ResetExpiryWorkBase(struct ExpiryWorkBase*expiry_work_base);
 extern void LockExpiryWorkBase(struct ExpiryWorkBase*expiry_work_base);
 extern void UnlockExpiryWorkBase(struct ExpiryWorkBase*expiry_work_base);
+#define SetupEWB struct ExpiryWorkBase eWB
 #endif
