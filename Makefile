@@ -6,13 +6,6 @@ obj-m := ExpiryWorkBase.o
 all:
 	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules
 
-log:
-	dmesg -w
-
-clear:
-	dmesg -c
-
-
 clean:
 	$(MAKE) -C $(KERNELDIR) M=$(PWD) clean
 
@@ -20,8 +13,10 @@ clean:
 start:
 	make all
 	sudo insmod ExpiryWorkBase.ko
-	make log
+
 	
 stop:
 	sudo rmmod ExpiryWorkBase.ko
-	make clear
+	make clean
+pull:
+	git pull origin $(BRANCH) --rebase
