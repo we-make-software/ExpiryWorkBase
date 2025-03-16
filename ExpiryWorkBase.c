@@ -1,10 +1,10 @@
 #include "../TheRequirements/TheRequirements.h"
 struct ExpiryWorkBase {
     bool Cancelled;
+    struct mutex Mutex;
     struct ExpiryWorkBase*Previous;
     void*Parent;
     void(*AutoDelete)(void*); 
-    struct mutex Mutex;
     struct delayed_work Work;
 };
 static void StopRaceConditionExpiryWorkBase(struct ExpiryWorkBase*expiry_work_base);
