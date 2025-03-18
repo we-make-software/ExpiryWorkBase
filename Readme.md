@@ -1,73 +1,77 @@
-# **Expiry Work Base - Memory Management for Time-Limited Data**  
+# **Expiry Work Base - Task Expiry & Hierarchical Management**
 
-This project is designed to **manage memory efficiently** by remembering data for **10 minutes** or allowing early cancellation when necessary.  
+## **Overview**
+**Expiry Work Base (EWB)** is a **memory management system** designed for **hierarchical task expiry**. It manages **time-limited data**, ensuring efficient **deletion** and **resource cleanup**.
 
-## **Background**  
-The problem originates from **ARP in networking**, which has a **10-minute timeout** for remembering MAC-IP mappings. To **optimize memory usage**, this system ensures that:  
-- Data is **automatically deleted** when no longer needed.  
-- Each level in the **hierarchy deletes its lower levels first** before removing itself.  
-- The **lower levels cannot delete higher levels**, ensuring proper data flow.  
-- The system integrates well with **`list_head`** for efficient structuring.
-
-## **Why is this needed in Linux?**  
-Linux lacks an **automated, hierarchical deletion system** where deletion happens in an **orderly, structured way**. This project fills that gap.  
-
-While this system does introduce **some workload**, Linux is **designed to handle it efficiently**. Since deletion is **less important than new data**, it runs in **`system_wq`**, ensuring that new data **takes priority** over old data cleanup.
-
-## **Handling Mutex and Null Checks**  
-- A **mutex** ensures thread safety when accessing or modifying data.  
-- **Data retrieval** doesn’t need a mutex but benefits from **null checks**.  
-- If data is **null**, the struct provides an **`Invalid`** flag, preventing unnecessary processing.  
-- The **`Invalid`** flag should be checked **after** performing a null check.
+## **Key Features**
+- **Hierarchical Structure:** Tasks are **organized in layers**, ensuring lower layers **delete first** before the higher layers.
+- **Automated Cleanup:** Tasks **expire automatically** unless they are **reset** or manually cancelled.
+- **Optimized Performance:** Uses **`list_head`** to store active tasks efficiently.
+- **Thread Safety:** **Mutex locking** ensures safe concurrent access.
+- **Benchmarking Support:** Measures **task execution time**.
 
 ---
 
-## **Public Functions**  
-
-### **1. Setup Expiry Work Base**
+## **Public API**
+### **1. Measure Task Execution Time**
 ```c
-extern void SetupExpiryWorkBase(struct ExpiryWorkBase*expiry_work_base, 
-                                struct ExpiryWorkBase*previous, 
-                                void*parent, 
-                                void(*AutoDelete)(void*));
+extern struct ExpiryWorkBaseBenchmark TheBenchmarksExpiryWorkBase(struct ExpiryWorkBase*,bool,bool);
 ```
-- **Initializes an `ExpiryWorkBase` instance.**  
-- **Previous:** Links to a higher hierarchy level (or `NULL` if not needed).  
-- **AutoDelete:** Custom function called when deletion occurs.
+- **Calculates execution time** and **expiry duration**.
+- If `bool cancelExpiry` is `true`, the task is **automatically cancelled**.
 
-### **2. Cancel Expiry Work Base**
+### **2. Retrieve Parent Task**
 ```c
-extern void CancelExpiryWorkBase(struct ExpiryWorkBase*expiry_work_base);
+extern void*GetExpiryWorkBaseParent(struct ExpiryWorkBase*);
 ```
-- **Cancels an `ExpiryWorkBase` instance.**  
-- Cancelling does **not** affect the **lower hierarchy**, but lower levels **can cancel higher levels**.
+- Retrieves the **parent task** in the hierarchy.
 
-### **3. Reset Expiry Work Base**
+### **3. Setup an Expiry Work Base**
 ```c
-extern bool ResetExpiryWorkBase(struct ExpiryWorkBase*expiry_work_base);
+extern bool SetupExpiryWorkBase(struct ExpiryWorkBase**,struct ExpiryWorkBase*,void*,void(*)(void*));
 ```
-- **Resets the **10-minute timeout** for **all linked instances**.
+- Initializes and **adds a new task** to the global list.
+- **Auto-deletion function** can be provided.
 
-### **4. Lock Expiry Work Base**
+### **4. Cancel an Expiry Work Base**
 ```c
-extern void LockExpiryWorkBase(struct ExpiryWorkBase*expiry_work_base);
+extern void CancelExpiryWorkBase(struct ExpiryWorkBase*ewb);
 ```
-- **Locks the instance to prevent modifications.**
+- **Cancels a task** and removes it from the system.
 
-### **5. Unlock Expiry Work Base**
+### **5. Lock and Unlock a Task**
 ```c
-extern void UnlockExpiryWorkBase(struct ExpiryWorkBase*expiry_work_base);
+extern bool LockExpiryWorkBase(struct ExpiryWorkBase*ewb);
+extern bool UnlockExpiryWorkBase(struct ExpiryWorkBase*ewb);
 ```
-- **Unlocks the instance to allow modifications.**
+- **Prevents modifications** while locked.
+- **Unlocks the task** when modifications are allowed.
+
+### **6. Define Expiry Work Base Struct**
+```c
+#define SetupEWB struct ExpiryWorkBase*ewb
+```
+- **Macro for declaring an Expiry Work Base**.
 
 ---
 
-## **Performance Considerations**  
-- This system **minimizes overhead** by running in **`system_wq`**, ensuring that **new data takes priority** over old data cleanup.  
-- Mutex locking is only applied **where necessary** to maintain efficiency.  
-- The `Invalid` flag provides a **lightweight mechanism** to avoid unnecessary operations.
+## **Performance Considerations**
+- **Tasks expire in a structured manner**, reducing unnecessary processing.
+- **Only necessary locks are applied**, keeping it **lightweight and fast**.
+- **Benchmarks provide real-time insights** into task execution.
 
 ---
 
-## **Usage**
-Just run the **KO file** and add `ExpiryWorkBase.h` to your project.
+## **Integration with TheRequirements**
+**Expiry Work Base** is now part of **TheRequirements 0.1**, making it an essential part of the **layered execution tracking** system.
+
+---
+
+## **License**
+This project is licensed under the **Do What The F*ck You Want To Public License (WTFPL)**.  
+See the [LICENSE](LICENSE) file for more details.
+
+---
+
+## **Author**
+**Pirasath Luxchumykanthan**  

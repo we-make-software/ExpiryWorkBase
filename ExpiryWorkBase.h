@@ -1,17 +1,15 @@
 #include "../TheRequirements/TheRequirements.h"
 #ifndef ExpiryWorkBase_H
 #define ExpiryWorkBase_H
-struct ExpiryWorkBase {
-    bool Invalid;
-    struct mutex Mutex;
-    struct ExpiryWorkBase*Previous;
-    void*Parent;
-    u8 Used[sizeof(void*)+sizeof(struct delayed_work)];
+struct ExpiryWorkBase;
+struct ExpiryWorkBaseBenchmark {
+    u64 period,execution;
 };
-extern void SetupExpiryWorkBase(struct ExpiryWorkBase*expiry_work_base,struct ExpiryWorkBase*previous,void*parent,void(*AutoDelete)(void*));
-extern void CancelExpiryWorkBase(struct ExpiryWorkBase*expiry_work_base);
-extern bool ResetExpiryWorkBase(struct ExpiryWorkBase*expiry_work_base);
-extern void LockExpiryWorkBase(struct ExpiryWorkBase*expiry_work_base);
-extern void UnlockExpiryWorkBase(struct ExpiryWorkBase*expiry_work_base);
-#define SetupEWB struct ExpiryWorkBase ewb
+extern struct ExpiryWorkBaseBenchmark TheBenchmarksExpiryWorkBase(struct ExpiryWorkBase*,bool,bool);
+extern void*GetExpiryWorkBaseParent(struct ExpiryWorkBase*);
+extern bool SetupExpiryWorkBase(struct ExpiryWorkBase**,struct ExpiryWorkBase*,void*,void(*)(void*));
+extern void CancelExpiryWorkBase(struct ExpiryWorkBase*ewb);
+extern bool LockExpiryWorkBase(struct ExpiryWorkBase*ewb);
+extern bool UnlockExpiryWorkBase(struct ExpiryWorkBase*ewb);
+#define SetupEWB struct ExpiryWorkBase*ewb
 #endif
