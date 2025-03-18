@@ -24,7 +24,7 @@ commit:
 	@if ! git diff-index --quiet HEAD; then \
 		git add . && \
 		git commit -m "$(COMMIT_MSG)" && \
-		git push origin main --force \
+		git push origin main --force; \
 	else \
 		echo "No changes in $(PWD) to commit."; \
 	fi
