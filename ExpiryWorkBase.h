@@ -1,6 +1,6 @@
-#include "../TheRequirements/TheRequirements.h"
 #ifndef ExpiryWorkBase_H
 #define ExpiryWorkBase_H
+#include "../TheRequirements/TheRequirements.h"
 struct ExpiryWorkBase;
 struct ExpiryWorkBaseBenchmark {
     u64 period,execution;
