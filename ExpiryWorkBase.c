@@ -159,8 +159,7 @@ bool SetupExpiryWorkBase(struct ExpiryWorkBase**ewb,struct ExpiryWorkBase*previo
     (*ewb)->parent=parent;
     (*ewb)->bindDelete=bindDelete;
     (*ewb)->setup=63;
-    (*ewb)->prefix=get_random_u8();
-    (*ewb)->prefix=65+(get_random_u8() % 191);
+    (*ewb)->prefix=65+(get_random_u8()% 191);
     (*ewb)->control=(*ewb)->prefix-(*ewb)->setup;
     (*ewb)->prev=previous;
     (*ewb)->cancelled=false;
