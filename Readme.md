@@ -73,5 +73,4 @@ See the [LICENSE](LICENSE) file for more details.
 
 ---
 
-## **Author**
 **Pirasath Luxchumykanthan**  
