@@ -47,7 +47,15 @@ extern bool UnlockExpiryWorkBase(struct ExpiryWorkBase*ewb);
 - **Prevents modifications** while locked.
 - **Unlocks the task** when modifications are allowed.
 
-### **6. Define Expiry Work Base Struct**
+### **6. SetAutoDeleteExpiryWorkBase**
+```c
+extern void SetAutoDeleteExpiryWorkBase(struct ExpiryWorkBase*,void(*)(void*,struct ExpiryWorkBaseBenchmark));
+```
+- **Give the option to set SetAutoDeleteExpiryWorkBase function**.
+
+---
+
+### **7. Define Expiry Work Base Struct**
 ```c
 #define SetupEWB struct ExpiryWorkBase*ewb
 ```
