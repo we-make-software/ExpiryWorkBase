@@ -208,4 +208,4 @@ static void Layer0End(void){
         ewbcache=NULL;
     }
 }
-Layer0Setup("Expiry Work Base",0,0)
+Layer0Setup("ExpiryWorkBase",0,0)
