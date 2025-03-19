@@ -197,10 +197,11 @@ static void ewbinit(void *obj) {
     mutex_init(&ewb->lock);
     INIT_DELAYED_WORK(&ewb->work, ProcessExpiryWorkBaseToDo);
 }
-void SetAutoDeleteExpiryWorkBase(struct ExpiryWorkBase*,void(*)(void*,struct ExpiryWorkBaseBenchmark));
-void SetAutoDeleteExpiryWorkBase(struct ExpiryWorkBase*ewb,void(*bindDelete)(void*,struct ExpiryWorkBaseBenchmark)){
-    if(!ewb&&GetExpiryWorkBaseParent(ewb))return;
+bool SetAutoDeleteExpiryWorkBase(struct ExpiryWorkBase*,void(*)(void*,struct ExpiryWorkBaseBenchmark));
+bool SetAutoDeleteExpiryWorkBase(struct ExpiryWorkBase*ewb,void(*bindDelete)(void*,struct ExpiryWorkBaseBenchmark)){
+    if(!ewb&&GetExpiryWorkBaseParent(ewb))return false;
     ewb->bindDelete=bindDelete;
+    return true;
 }
 EXPORT_SYMBOL(SetAutoDeleteExpiryWorkBase);
 static void Layer0Start(void){
