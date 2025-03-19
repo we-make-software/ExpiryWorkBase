@@ -6,7 +6,7 @@ struct ExpiryWorkBaseBenchmark {
     u64 period,execution;
 };
 extern struct ExpiryWorkBaseBenchmark TheBenchmarksExpiryWorkBase(struct ExpiryWorkBase*,bool,bool);
-extern void SetAutoDeleteExpiryWorkBase(struct ExpiryWorkBase*,void(*)(void*,struct ExpiryWorkBaseBenchmark));
+extern bool SetAutoDeleteExpiryWorkBase(struct ExpiryWorkBase*,void(*)(void*,struct ExpiryWorkBaseBenchmark));
 extern void*GetExpiryWorkBaseParent(struct ExpiryWorkBase*);
 extern bool SetupExpiryWorkBase(struct ExpiryWorkBase**,struct ExpiryWorkBase*,void*,void(*)(void*));
 extern void CancelExpiryWorkBase(struct ExpiryWorkBase*ewb);
