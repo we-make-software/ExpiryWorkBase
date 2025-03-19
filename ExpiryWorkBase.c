@@ -15,7 +15,6 @@ struct ExpiryWorkBase {
     ktime_t start,get;
     struct list_head list;
 };
-
 bool LockExpiryWorkBase(struct ExpiryWorkBase*);
 bool LockExpiryWorkBase(struct ExpiryWorkBase*ewb){
     if(!ewb||ewb->magic!=magic||ewb->setup!=63||ewb->prefix<65||(ewb->prefix-ewb->setup)!=ewb->control||ewb->cancelled||ewb->running)return false;
@@ -49,10 +48,9 @@ void CancelExpiryWorkBase(struct ExpiryWorkBase*ewb){
         mutex_unlock(&ewb->lock);
         return;
     }
-    ewb->cancelled=true;
 	if(ewb->bindDelete)
         ewb->bindDelete(ewb->parent,TheBenchmarksExpiryWorkBase(ewb,false,false));
-    kfree(ewb->parent);        
+    ewb->cancelled=true;       
 	mutex_unlock(&ewb->lock);
     mutex_lock(&ewb->lock);
     ewb->magic=0;
@@ -93,6 +91,13 @@ static void BackgroundProcessExpiryWorkBase(struct work_struct*work){
     ResetExpiryWorkBase(background_ewb->ewb);
     kfree(background_ewb);
 }
+bool CheckForCancellationExpiryWorkBase(struct ExpiryWorkBase*);
+bool CheckForCancellationExpiryWorkBase(struct ExpiryWorkBase*ewb){
+    if(!ewb||ewb->cancelled)return true;
+    return false;
+}
+EXPORT_SYMBOL(CheckForCancellationExpiryWorkBase);
+static bool ResetExpiryWorkBase(struct ExpiryWorkBase*);
 static void*Get(struct ExpiryWorkBase*,bool);
 static void*Get(struct ExpiryWorkBase*ewb,bool IsOutSide){
     if(!ewb||ewb->cancelled||ewb->running)return NULL;
