@@ -15,6 +15,7 @@ struct ExpiryWorkBase {
     ktime_t start,get;
     struct list_head list;
 };
+
 bool LockExpiryWorkBase(struct ExpiryWorkBase*);
 bool LockExpiryWorkBase(struct ExpiryWorkBase*ewb){
     if(!ewb||ewb->magic!=magic||ewb->setup!=63||ewb->prefix<65||(ewb->prefix-ewb->setup)!=ewb->control||ewb->cancelled||ewb->running)return false;
@@ -181,7 +182,8 @@ void StopExpiryWorkBase(void){
     useGlobalListUse=true;
     mutex_unlock(&globalListLock);
 }
-void ewbinit(void *obj) {
+EXPORT_SYMBOL(StopExpiryWorkBase);
+static void ewbinit(void *obj) {
     struct ExpiryWorkBase *ewb = (struct ExpiryWorkBase *)obj;
     ewb->parent = NULL; 
     ewb->bindDelete = NULL;
@@ -195,8 +197,12 @@ void ewbinit(void *obj) {
     mutex_init(&ewb->lock);
     INIT_DELAYED_WORK(&ewb->work, ProcessExpiryWorkBaseToDo);
 }
-
-EXPORT_SYMBOL(StopExpiryWorkBase);
+void SetAutoDeleteExpiryWorkBase(struct ExpiryWorkBase*,void(*)(void*,struct ExpiryWorkBaseBenchmark));
+void SetAutoDeleteExpiryWorkBase(struct ExpiryWorkBase*ewb,void(*bindDelete)(void*,struct ExpiryWorkBaseBenchmark)){
+    if(!ewb&&GetExpiryWorkBaseParent(ewb))return;
+    ewb->bindDelete=bindDelete;
+}
+EXPORT_SYMBOL(SetAutoDeleteExpiryWorkBase);
 static void Layer0Start(void){
     magic=get_random_u32();
     INIT_LIST_HEAD(&globalList);
