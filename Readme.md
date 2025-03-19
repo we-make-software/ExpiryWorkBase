@@ -51,7 +51,7 @@ extern bool UnlockExpiryWorkBase(struct ExpiryWorkBase*ewb);
 ```c
 extern void SetAutoDeleteExpiryWorkBase(struct ExpiryWorkBase*,void(*)(void*,struct ExpiryWorkBaseBenchmark));
 ```
-- **Give the option to set SetAutoDeleteExpiryWorkBase function**.
+- **Give the option to set function**.
 
 ---
 
