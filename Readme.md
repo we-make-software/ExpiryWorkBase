@@ -8,7 +8,6 @@
     </td>
     <td>
       <strong>Role:</strong> TheRequirements<br>
-      Ensuring that no one can access this data and that it is deleted if a project stops, allowing for proper maintenance.
     </td>
   </tr>
   <tr style="border: none;">
