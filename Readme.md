@@ -6,8 +6,7 @@
     </td>
     <td>
       <strong>Role:</strong> ExpiryWorkBase 🛠️ <br>
-      <strong>Task:</strong> I ensure that data does not remain in RAM for more than 10 minutes. <br>
-      <strong>Boss:</strong> Pirasath Luxchumykanthan
+      <strong>Task:</strong> I ensure that data does not remain in RAM for more than 10 minutes. This my tool.
     </td>
   </tr>
 </table>
@@ -17,6 +16,5 @@
 This project is licensed under the **Do What The F*ck You Want To Public License (WTFPL)**.  
 See the [LICENSE](LICENSE) file for more details.
 
----
-
+## **Made by**  
 **Pirasath Luxchumykanthan**  
