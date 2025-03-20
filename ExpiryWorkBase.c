@@ -160,7 +160,7 @@ EXPORT_SYMBOL(SetupExpiryWorkBase);
 void StopExpiryWorkBase(void);
 void StopExpiryWorkBase(void) {
     if(StoppingExpiryWorkBase)return;
-    StoppingExpiryWorkBase = true;
+    StoppingExpiryWorkBase=true;
     mutex_lock(&globalListLock);
     struct ExpiryWorkBase*ewb,*tmp;
     list_for_each_entry_safe(ewb,tmp,&globalList,list) {
@@ -168,6 +168,7 @@ void StopExpiryWorkBase(void) {
             CancelExpiryWorkBase(ewb);
     }
     mutex_unlock(&globalListLock);
+    StoppingExpiryWorkBase=false;
 }
 
 EXPORT_SYMBOL(StopExpiryWorkBase);
