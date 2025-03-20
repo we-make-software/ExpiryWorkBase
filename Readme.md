@@ -6,7 +6,8 @@
     </td>
     <td>
       <strong>Role:</strong> ExpiryWorkBase 🛠️ <br>
-      <strong>Task:</strong> I ensure that data does not remain in RAM for more than 10 minutes. This my tool.
+      <strong>Task:</strong> I ensure that data does not remain in RAM for more than 10 minutes. <br/>
+                            This my tool.
     </td>
   </tr>
 </table>
