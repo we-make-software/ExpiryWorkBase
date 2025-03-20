@@ -1,12 +1,12 @@
-<table>
-  <tr>
+<table style="border-collapse: collapse; border: none;">
+  <tr style="border: none;">
     <td>
       <img src="profile.png" alt="Worker Profile" width="150" 
            style="border: 3px solid black; border-radius: 10px; padding: 5px;">
     </td>
     <td>
       <strong>Role:</strong> ExpiryWorkBase 🛠️ <br>
-      <strong>Task:</strong> I ensure that data does not remain in RAM for more than 10 minutes.
+      <strong>Task:</strong> I ensure that data does not remain in RAM for more than 10 minutes. <br>
       <strong>Boss:</strong> Pirasath Luxchumykanthan
     </td>
   </tr>
