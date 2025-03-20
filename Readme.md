@@ -7,7 +7,7 @@
            style="border: 3px solid black; border-radius: 10px; padding: 5px;">
     </td>
     <td>
-      <strong>Role:</strong> TheRequirements 🛠️ <br>
+      <strong>Role:</strong> TheRequirements<br>
       Ensuring that no one can access this data and that it is deleted if a project stops, allowing for proper maintenance.
     </td>
   </tr>
@@ -17,7 +17,7 @@
            style="border: 3px solid black; border-radius: 10px; padding: 5px;">
     </td>
     <td>
-      <strong>Role:</strong> ExpiryWorkBase 🛠️ <br>
+      <strong>Role:</strong> ExpiryWorkBase<br>
       I ensure that data does not remain in RAM for more than 10 minutes. <br/>
                             This my tool.
     </td>
