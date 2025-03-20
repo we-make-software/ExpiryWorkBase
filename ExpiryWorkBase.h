@@ -2,9 +2,7 @@
 #define ExpiryWorkBase_H
 #include "../TheRequirements/TheRequirements.h"
 struct ExpiryWorkBase;
-struct ExpiryWorkBaseBenchmark {
-    u64 period,execution;
-};
+struct ExpiryWorkBaseBenchmark;
 extern struct ExpiryWorkBaseBenchmark TheBenchmarksExpiryWorkBase(struct ExpiryWorkBase*,bool,bool);
 extern bool SetAutoDeleteExpiryWorkBase(struct ExpiryWorkBase*,void(*)(void*,struct ExpiryWorkBaseBenchmark));
 extern void*GetExpiryWorkBaseParent(struct ExpiryWorkBase*);
