@@ -12,15 +12,19 @@ struct ExpiryWorkBase {
     ktime_t start,get;
     struct list_head list;
 };
-static bool StoppingExpiryWorkBase = false;
+static bool StoppingExpiryWorkBase;
+bool IsStoppingExpiryWorkBaseFalse(void);
+bool IsStoppingExpiryWorkBaseFalse(void){
+    return !StoppingExpiryWorkBase;
+}
+EXPORT_SYMBOL(IsStoppingExpiryWorkBaseFalse);
 void*GetExpiryWorkBasePrevious(struct ExpiryWorkBase*);
 void*GetExpiryWorkBasePrevious(struct ExpiryWorkBase*ewb){
-    return !StoppingExpiryWorkBase&&ewb&&ewb->prev?ewb->prev->parent:NULL;
+    return ewb&&ewb->prev?ewb->prev->parent:NULL;
 }
 EXPORT_SYMBOL(GetExpiryWorkBasePrevious);
 bool LockExpiryWorkBase(struct ExpiryWorkBase*);
 bool LockExpiryWorkBase(struct ExpiryWorkBase*ewb){
-    if(StoppingExpiryWorkBase)return true;
     if(!ewb||ewb->cancelled)return false;
     mutex_lock(&ewb->lock);
     return true;
@@ -28,7 +32,6 @@ bool LockExpiryWorkBase(struct ExpiryWorkBase*ewb){
 EXPORT_SYMBOL(LockExpiryWorkBase);
 bool UnlockExpiryWorkBase(struct ExpiryWorkBase*);
 bool UnlockExpiryWorkBase(struct ExpiryWorkBase*ewb){
-    if(StoppingExpiryWorkBase)return true;
     if(!ewb||ewb->cancelled)return false;
     mutex_unlock(&ewb->lock);
     return true;
@@ -41,7 +44,6 @@ struct BackgroundExpiryWorkBase{
 static LIST_HEAD(globalList);
 static DEFINE_MUTEX(globalListLock);
 void CancelExpiryWorkBase(struct ExpiryWorkBase*ewb);
-static struct kmem_cache*ewbcache;
 struct ExpiryWorkBaseBenchmark TheBenchmarksExpiryWorkBase(struct ExpiryWorkBase*,bool,bool);
 void CancelExpiryWorkBase(struct ExpiryWorkBase*ewb){
     if(!ewb||!delayed_work_pending(&ewb->work))return;
@@ -59,7 +61,7 @@ void CancelExpiryWorkBase(struct ExpiryWorkBase*ewb){
     mutex_lock(&globalListLock);
     list_del(&ewb->list);
     mutex_unlock(&globalListLock);
-    kmem_cache_free(ewbcache,ewb);
+    kfree(ewb);
 }
 EXPORT_SYMBOL(CancelExpiryWorkBase);
 struct ExpiryWorkBaseBenchmark TheBenchmarksExpiryWorkBase(struct ExpiryWorkBase*ewb,bool consolePrint,bool cancelExpiry){
@@ -91,7 +93,6 @@ static void BackgroundProcessExpiryWorkBase(struct work_struct*work){
 static bool ResetExpiryWorkBase(struct ExpiryWorkBase*);
 static void*Get(struct ExpiryWorkBase*,bool);
 static void*Get(struct ExpiryWorkBase*ewb,bool ios){
-    if(StoppingExpiryWorkBase)return NULL;
     if(!ewb||ewb->cancelled||(ewb->prev&&ewb->prev->cancelled))return NULL;
     if(ewb->prev){
         struct BackgroundExpiryWorkBase*background_ewb=kmalloc(sizeof(struct BackgroundExpiryWorkBase),GFP_KERNEL);
@@ -103,17 +104,17 @@ static void*Get(struct ExpiryWorkBase*ewb,bool ios){
     }
     if(!ios)
         ewb->get=ktime_get_real();
-    mod_delayed_work(system_wq,&ewb->work,msecs_to_jiffies(600000));
+    if(!StoppingExpiryWorkBase)
+        mod_delayed_work(system_wq,&ewb->work,msecs_to_jiffies(600000));
     return ewb->parent;
 }
 void*GetExpiryWorkBaseParent(struct ExpiryWorkBase*);
 void*GetExpiryWorkBaseParent(struct ExpiryWorkBase*ewb){
-    return StoppingExpiryWorkBase&&ewb?Get(ewb,true):NULL;
+    return ewb?Get(ewb,true):NULL;
 }
 EXPORT_SYMBOL(GetExpiryWorkBaseParent);
 static bool ResetExpiryWorkBase(struct ExpiryWorkBase*ewb){
-    if(StoppingExpiryWorkBase)return false;
-	if(!ewb||ewb->cancelled)return false;
+    if(StoppingExpiryWorkBase||!ewb||ewb->cancelled)return false;
 	mutex_lock(&ewb->lock);
     if(ewb->cancelled){
         mutex_unlock(&ewb->lock);
@@ -139,9 +140,8 @@ bool SetupExpiryWorkBase(struct ExpiryWorkBase**,struct ExpiryWorkBase*,void*,vo
 
 void(*bindDelete)(void*,struct ExpiryWorkBaseBenchmark); 
 bool SetupExpiryWorkBase(struct ExpiryWorkBase**ewb,struct ExpiryWorkBase*previous,void*parent,void(*bindDelete)(void*,struct ExpiryWorkBaseBenchmark)){
-    if(StoppingExpiryWorkBase)return false;
-    if(!ewb||!(*ewb=kmem_cache_alloc(ewbcache,GFP_KERNEL)))return false;
-    (*ewb)->cancelled = false;
+    if(StoppingExpiryWorkBase||!ewb||!(*ewb=kmalloc(sizeof(struct ExpiryWorkBase),GFP_KERNEL)))return false;
+    (*ewb)->cancelled=false;
     mutex_init(&(*ewb)->lock);
     INIT_DELAYED_WORK(&(*ewb)->work, ProcessExpiryWorkBaseToDo);
     mutex_lock(&globalListLock);
@@ -157,20 +157,19 @@ bool SetupExpiryWorkBase(struct ExpiryWorkBase**ewb,struct ExpiryWorkBase*previo
 }
 EXPORT_SYMBOL(SetupExpiryWorkBase);
 
-
 void StopExpiryWorkBase(void);
-void StopExpiryWorkBase(void){
-    if (StoppingExpiryWorkBase) return; 
+void StopExpiryWorkBase(void) {
+    if(StoppingExpiryWorkBase)return;
+    StoppingExpiryWorkBase = true;
     mutex_lock(&globalListLock);
-    if(StoppingExpiryWorkBase){
-        mutex_unlock(&globalListLock);
-        return;
-    }
     struct ExpiryWorkBase*ewb,*tmp;
-    list_for_each_entry_safe(ewb,tmp,&globalList,list)
-        CancelExpiryWorkBase(ewb);
+    list_for_each_entry_safe(ewb,tmp,&globalList,list) {
+        if (!delayed_work_pending(&ewb->work)) 
+            CancelExpiryWorkBase(ewb);
+    }
     mutex_unlock(&globalListLock);
 }
+
 EXPORT_SYMBOL(StopExpiryWorkBase);
 
 bool SetAutoDeleteExpiryWorkBase(struct ExpiryWorkBase*,void(*)(void*,struct ExpiryWorkBaseBenchmark));
@@ -182,10 +181,10 @@ bool SetAutoDeleteExpiryWorkBase(struct ExpiryWorkBase*ewb,void(*bindDelete)(voi
 }
 EXPORT_SYMBOL(SetAutoDeleteExpiryWorkBase);
 static void Layer0Start(void){
+    StoppingExpiryWorkBase=false;
     INIT_LIST_HEAD(&globalList);
-    ewbcache=kmem_cache_create("ewbcache", sizeof(struct ExpiryWorkBase),0, SLAB_HWCACHE_ALIGN,NULL);
 }
 static void Layer0End(void){
-    kmem_cache_destroy(ewbcache);
+    StoppingExpiryWorkBase=true;
 }
 Layer0Setup("ExpiryWorkBase",0,0)
