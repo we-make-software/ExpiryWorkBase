@@ -17,8 +17,7 @@
     </td>
     <td>
       <strong>Role:</strong> ExpiryWorkBase<br>
-      I ensure that data does not remain in RAM for more than 10 minutes. <br/>
-                            This my tool.
+      I ensure that data does not remain in RAM for more than 10 minutes. (If not needed.)
     </td>
   </tr>
 </table>
