@@ -1,7 +1,5 @@
-#include "../TheRequirements/TheRequirements.h"
-struct ExpiryWorkBaseBenchmark {
-    u64 period,execution;
-};
+#include "ExpiryWorkBase.h"
+
 struct ExpiryWorkBase {
     u8 cancelled;
     struct mutex lock;
@@ -13,24 +11,20 @@ struct ExpiryWorkBase {
     struct list_head list;
 };
 static bool StoppingExpiryWorkBase;
-bool IsStoppingExpiryWorkBaseFalse(void);
 bool IsStoppingExpiryWorkBaseFalse(void){
     return !StoppingExpiryWorkBase;
 }
 EXPORT_SYMBOL(IsStoppingExpiryWorkBaseFalse);
-void*GetExpiryWorkBasePrevious(struct ExpiryWorkBase*);
 void*GetExpiryWorkBasePrevious(struct ExpiryWorkBase*ewb){
     return ewb&&ewb->prev?ewb->prev->parent:NULL;
 }
 EXPORT_SYMBOL(GetExpiryWorkBasePrevious);
-bool LockExpiryWorkBase(struct ExpiryWorkBase*);
 bool LockExpiryWorkBase(struct ExpiryWorkBase*ewb){
     if(!ewb||ewb->cancelled)return false;
     mutex_lock(&ewb->lock);
     return true;
 }
 EXPORT_SYMBOL(LockExpiryWorkBase);
-bool UnlockExpiryWorkBase(struct ExpiryWorkBase*);
 bool UnlockExpiryWorkBase(struct ExpiryWorkBase*ewb){
     if(!ewb||ewb->cancelled)return false;
     mutex_unlock(&ewb->lock);
@@ -43,7 +37,6 @@ struct BackgroundExpiryWorkBase{
 };
 static LIST_HEAD(globalList);
 static DEFINE_MUTEX(globalListLock);
-void CancelExpiryWorkBase(struct ExpiryWorkBase*ewb);
 struct ExpiryWorkBaseBenchmark TheBenchmarksExpiryWorkBase(struct ExpiryWorkBase*,bool,bool);
 void CancelExpiryWorkBase(struct ExpiryWorkBase*ewb){
     if(!ewb||!delayed_work_pending(&ewb->work))return;
@@ -108,7 +101,6 @@ static void*Get(struct ExpiryWorkBase*ewb,bool ios){
         mod_delayed_work(system_wq,&ewb->work,msecs_to_jiffies(600000));
     return ewb->parent;
 }
-void*GetExpiryWorkBaseParent(struct ExpiryWorkBase*);
 void*GetExpiryWorkBaseParent(struct ExpiryWorkBase*ewb){
     return ewb?Get(ewb,true):NULL;
 }
@@ -135,8 +127,6 @@ static void ProcessExpiryWorkBaseToDo(struct work_struct*);
 static void ProcessExpiryWorkBaseToDo(struct work_struct*work){
     CancelExpiryWorkBase(container_of(work,struct ExpiryWorkBase,work.work));
 }
-bool SetupExpiryWorkBase(struct ExpiryWorkBase**,struct ExpiryWorkBase*,void*,void(*)(void*,struct ExpiryWorkBaseBenchmark));
-void(*bindDelete)(void*,struct ExpiryWorkBaseBenchmark); 
 bool SetupExpiryWorkBase(struct ExpiryWorkBase**ewb,struct ExpiryWorkBase*previous,void*parent,void(*bindDelete)(void*,struct ExpiryWorkBaseBenchmark)){
     if(StoppingExpiryWorkBase||!ewb||!(*ewb=kmalloc(sizeof(struct ExpiryWorkBase),GFP_KERNEL)))return false;
     (*ewb)->cancelled=false;
@@ -154,7 +144,6 @@ bool SetupExpiryWorkBase(struct ExpiryWorkBase**ewb,struct ExpiryWorkBase*previo
     return true;
 }
 EXPORT_SYMBOL(SetupExpiryWorkBase);
-void StopExpiryWorkBase(void);
 void StopExpiryWorkBase(void) {
     if(StoppingExpiryWorkBase)return;
     StoppingExpiryWorkBase=true;
@@ -176,11 +165,11 @@ bool SetAutoDeleteExpiryWorkBase(struct ExpiryWorkBase*ewb,void(*bindDelete)(voi
     return true;
 }
 EXPORT_SYMBOL(SetAutoDeleteExpiryWorkBase);
-static void Layer0Start(void){
+static void Start(void){
     StoppingExpiryWorkBase=false;
     INIT_LIST_HEAD(&globalList);
 }
-static void Layer0End(void){
+static void End(void){
     StoppingExpiryWorkBase=true;
 }
-Layer0Setup("ExpiryWorkBase",0,0)
+Setup("ExpiryWorkBase",0,0)

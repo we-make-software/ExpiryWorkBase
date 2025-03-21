@@ -1,0 +1,1 @@
+savedcmd_ExpiryWorkBase.ko := ld -r -m elf_x86_64 -z noexecstack --no-warn-rwx-segments --build-id=sha1  -T /usr/src/linux-6.13.6/scripts/module.lds -o ExpiryWorkBase.ko ExpiryWorkBase.o ExpiryWorkBase.mod.o .module-common.o
