@@ -1,4 +1,4 @@
-### **ExpiryWorkBase 0.0**
+### **ExpiryWorkBase**
 
 <table style="border-collapse: collapse; border: none;">
   <tr style="border: none;">
@@ -7,7 +7,7 @@
            style="border: 3px solid black; border-radius: 10px; padding: 5px;">
     </td>
     <td>
-      <strong>Role:</strong> TheRequirements<br>
+      <strong>Role:</strong> TheRequirements
     </td>
   </tr>
   <tr style="border: none;">
@@ -16,8 +16,7 @@
            style="border: 3px solid black; border-radius: 10px; padding: 5px;">
     </td>
     <td>
-      <strong>Role:</strong> ExpiryWorkBase<br>
-      I ensure that data does not remain in RAM for more than 10 minutes. (If not needed.)
+      <strong>Role:</strong> InternalDeliveryGuy
     </td>
   </tr>
 </table>
